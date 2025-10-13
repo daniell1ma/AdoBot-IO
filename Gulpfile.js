@@ -2,14 +2,14 @@
 
 const gulp = require('gulp')
 const concat = require('gulp-concat')
-const uglify = require('gulp-uglify')
-const jshint = require('gulp-jshint')
+const terser = require('gulp-terser')
+const eslint = require('gulp-eslint-new')
 const fancyLog = require('fancy-log')
 const colors = require('ansi-colors')
 const inject = require('gulp-inject')
 const del = require('del')
 const randomstring = require('randomstring')
-const templateCache = require('gulp-angular-templatecache');
+const ngHtml2Js = require('gulp-ng-html2js');
 
 
 // javascripts -----------------------------
@@ -51,33 +51,33 @@ var copy_files = [
   './panel/index.html'
 ]
 
-gulp.task('clean', function () {
+function clean() {
   return del(['./dist']);
-})
+}
 
-gulp.task('lint', function () {
-  var s = gulp.src(app_js)
-  if (process.env.NODE_ENV != 'production') {
-    s = s
-      .pipe(jshint())
-      .pipe(jshint.reporter('default'))
+function lint() {
+  let stream = gulp.src(app_js)
+  if (process.env.NODE_ENV !== 'production') {
+    stream = stream.pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failAfterError());
   }
-  return s;
-})
+  return stream;
+}
 
-gulp.task('js:build', function() {
+function jsBuild() {
   var filename = 'application-' + randomstring.generate() + '.js';
   var stream = gulp.src(js_libs.concat(app_js))
     .pipe(concat(filename))
 
   if (process.env.NODE_ENV === 'production') {
     stream = stream
-      .pipe(uglify())
+      .pipe(terser())
       .on('error', function (err) { fancyLog(colors.red('[Error]'), err.toString()); })
   }
 
   return stream.pipe(gulp.dest('./dist/js'))
-})
+}
 
 // ------------ CSS -----------------------------
 
@@ -91,47 +91,48 @@ var app_css = [
   './panel/css/**/*.css',
 ]
 
-gulp.task('css:build', function() {
+function cssBuild() {
   var filename = 'application-' + randomstring.generate() + '.css';
   return gulp.src(css_libs.concat(app_css))
     .pipe(concat(filename))
     .pipe(gulp.dest('./dist/css'))
-})
+}
 
-gulp.task('copy', function () {
+function copy() {
   return gulp.src(copy_files)
     .pipe(gulp.dest('./dist'))
-});
+}
 
-gulp.task('templates', function () {
+function templates() {
   return gulp.src('./panel/views/**/*.html')
-    .pipe(templateCache({
-      filename: 'templates-' + randomstring.generate() + '.js',
-      module: 'templates',
+    .pipe(ngHtml2Js({
+      moduleName: 'templates',
+      prefix: 'views/',
       standalone: true
     }))
     .pipe(gulp.dest('./dist/js'));
-})
+}
 
-gulp.task('inject', function() {
+function injectTask() {
   var target = gulp.src('./dist/index.html');
-  var sources = gulp.src(['./dist/**/*.js', './dist/**/*.css']);
+  var sources = gulp.src(['./dist/**/*.js', './dist/**/*.css'], { read: false });
 
   return target.pipe(inject(sources, {
     ignorePath: 'dist'
   })).pipe(gulp.dest('./dist'))
-})
+}
 
 // ------------- BUILD ----------------------------
 
-gulp.task('watch', function() {
-  gulp.watch('panel/**/*', gulp.series('default'));
-})
-
-const buildAndInject = gulp.series(
-  'clean',
-  gulp.parallel('js:build', 'css:build', 'templates', 'copy'),
-  'inject'
+const build = gulp.series(
+  clean,
+  gulp.parallel(lint, jsBuild, cssBuild, templates, copy),
+  injectTask
 );
 
-gulp.task('default', buildAndInject);
+function watch() {
+  gulp.watch('panel/**/*', build);
+}
+
+exports.default = build;
+exports.watch = watch;

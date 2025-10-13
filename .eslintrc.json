@@ -1,0 +1,15 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jquery": true
+  },
+  "globals": {
+    "angular": "readonly",
+    "io": "readonly",
+    "moment": "readonly",
+    "_": "readonly"
+  },
+  "extends": "eslint:recommended"
+}

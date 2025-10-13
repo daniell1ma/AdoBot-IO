@@ -4,10 +4,10 @@
     "collate": "utf8mb4_unicode_ci"
   },
   "development": {
-    "username": "root",
-    "password": null,
-    "database": "adobot",
-    "host": "127.0.0.1",
+    "username": { "use_env_variable": "DB_USERNAME" },
+    "password": { "use_env_variable": "DB_PASSWORD" },
+    "database": { "use_env_variable": "DB_DATABASE" },
+    "host": { "use_env_variable": "DB_HOST" },
     "dialect": "mysql",
     "dialectModule": "mysql2",
     "admin" : {
