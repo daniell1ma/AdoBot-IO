@@ -4,7 +4,8 @@ const gulp = require('gulp')
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
 const jshint = require('gulp-jshint')
-const gutil = require('gulp-util')
+const fancyLog = require('fancy-log')
+const colors = require('ansi-colors')
 const inject = require('gulp-inject')
 const del = require('del')
 const randomstring = require('randomstring')
@@ -50,14 +51,8 @@ var copy_files = [
   './panel/index.html'
 ]
 
-gulp.task('clean', function (done) {
-  del(['./dist'])
-    .then(function () {
-      done();
-    })
-    .catch(function(err) {
-      done(err);
-    })
+gulp.task('clean', function () {
+  return del(['./dist']);
 })
 
 gulp.task('lint', function () {
@@ -70,7 +65,7 @@ gulp.task('lint', function () {
   return s;
 })
 
-gulp.task('js:build', ['lint', 'clean'], function() {
+gulp.task('js:build', function() {
   var filename = 'application-' + randomstring.generate() + '.js';
   var stream = gulp.src(js_libs.concat(app_js))
     .pipe(concat(filename))
@@ -78,7 +73,7 @@ gulp.task('js:build', ['lint', 'clean'], function() {
   if (process.env.NODE_ENV === 'production') {
     stream = stream
       .pipe(uglify())
-      .on('error', function (err) { gutil.log(gutil.colors.red('[Error]'), err.toString()); })
+      .on('error', function (err) { fancyLog(colors.red('[Error]'), err.toString()); })
   }
 
   return stream.pipe(gulp.dest('./dist/js'))
@@ -96,19 +91,19 @@ var app_css = [
   './panel/css/**/*.css',
 ]
 
-gulp.task('css:build', ['clean'], function() {
+gulp.task('css:build', function() {
   var filename = 'application-' + randomstring.generate() + '.css';
   return gulp.src(css_libs.concat(app_css))
     .pipe(concat(filename))
     .pipe(gulp.dest('./dist/css'))
 })
 
-gulp.task('copy', ['clean'], function () {
+gulp.task('copy', function () {
   return gulp.src(copy_files)
     .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('templates', ['clean'], function () {
+gulp.task('templates', function () {
   return gulp.src('./panel/views/**/*.html')
     .pipe(templateCache({
       filename: 'templates-' + randomstring.generate() + '.js',
@@ -118,7 +113,7 @@ gulp.task('templates', ['clean'], function () {
     .pipe(gulp.dest('./dist/js'));
 })
 
-gulp.task('inject', ['js:build', 'css:build', 'templates', 'copy'], function() {
+gulp.task('inject', function() {
   var target = gulp.src('./dist/index.html');
   var sources = gulp.src(['./dist/**/*.js', './dist/**/*.css']);
 
@@ -129,13 +124,14 @@ gulp.task('inject', ['js:build', 'css:build', 'templates', 'copy'], function() {
 
 // ------------- BUILD ----------------------------
 
-gulp.task('watch', [], function() {
-  gulp.watch([
-    'panel/**/*',
-    '!dist/**/*',
-  ], ['default']);
-});
+gulp.task('watch', function() {
+  gulp.watch('panel/**/*', gulp.series('default'));
+})
 
+const buildAndInject = gulp.series(
+  'clean',
+  gulp.parallel('js:build', 'css:build', 'templates', 'copy'),
+  'inject'
+);
 
-gulp.task('default', ['js:build', 'css:build', 'inject'])
-
+gulp.task('default', buildAndInject);

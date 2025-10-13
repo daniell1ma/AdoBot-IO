@@ -1,10 +1,9 @@
 var env = process.env.NODE_ENV || 'development'
 var express = require('express')
 var app = require('express')();
-var bodyParser = require('body-parser');
 
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({
   extended: true
 })); // for parsing application/x-www-form-urlencoded
 app.use(express.static('./dist'))
