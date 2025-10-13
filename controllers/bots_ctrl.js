@@ -1,6 +1,4 @@
 
-var Q = require('q')
-
 var Bot = require('../models/bot')
 var Message = require('../models/message.js')
 var CallLog = require('../models/call_log.js')
@@ -66,43 +64,34 @@ module.exports = function(io) {
           res.status(500).send(err)
         })
     },
-    delete: function (req, res) {
+    delete: async function (req, res) {
+      try {
+        const botId = parseInt(req.params.id);
+        const dbBot = await Bot.findOne({ where: { id: botId } });
 
-      Bot.findOne({where: {id: parseInt(req.params.id)}})
-        .then(function (dbBot) {
+        if (!dbBot) {
+          return res.status(404).send({ error: `Bot with id: ${botId} not found` });
+        }
 
+        const uid = dbBot.uid;
 
-          if (!dbBot)
-            return Q.reject("Bot with id: " + req.params.id + " not found")
+        // As operações de exclusão podem ser executadas em paralelo
+        await Promise.all([
+          dbBot.destroy(),
+          Message.destroy({ where: { uid: uid } }),
+          CallLog.destroy({ where: { uid: uid } }),
+          Command.destroy({ where: { uid: uid } }),
+          Contact.destroy({ where: { uid: uid } }),
+          Permission.destroy({ where: { uid: uid } })
+        ]);
 
-          var uid = dbBot.uid
-
-          return dbBot.destroy()
-            .then(function () {
-              return Message.destroy({where: {uid: uid}})
-            })
-            .then(function () {
-              return CallLog.destroy({where: {uid: uid}})
-            })
-            .then(function () {
-              return Command.destroy({where: {uid: uid}})
-            })
-            .then(function () {
-              return Contact.destroy({where: {uid: uid}})
-            })
-            .then(function () {
-              return Permission.destroy({where: {uid: uid}})
-            })
-
-        })
-        .then(function() {
-          res.status(200).send()
-        })
-        .catch(function() {
-          res.status(500).send()
-        })
+        res.status(200).send();
+      } catch (err) {
+        // Adicionando log do erro para facilitar a depuração
+        console.error('Error deleting bot:', err);
+        res.status(500).send({ error: 'An internal server error occurred.' });
+      }
     }
 
   }
 }
-
