@@ -56,13 +56,10 @@ function clean() {
 }
 
 function lint() {
-  let stream = gulp.src(app_js)
-  if (process.env.NODE_ENV !== 'production') {
-    stream = stream.pipe(eslint())
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError());
-  }
-  return stream;
+  return gulp.src(app_js, { since: gulp.lastRun(lint) })
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 }
 
 function jsBuild() {
@@ -109,8 +106,8 @@ function templates() {
       moduleName: 'templates',
       prefix: 'views/',
       standalone: true
-    }))
-    .pipe(gulp.dest('./dist/js'));
+    })).pipe(concat('templates.js'))
+    .pipe(gulp.dest('./dist/js/'));
 }
 
 function injectTask() {
