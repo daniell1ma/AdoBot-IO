@@ -1,14 +1,14 @@
 require('dotenv').config();
 
 const env = process.env.NODE_ENV || 'development'
-var express = require('express')
-var app = require('express')();
+var express = require('express');
+var app = express();
 
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({
   extended: true
 })); // for parsing application/x-www-form-urlencoded
-app.use(express.static('./dist'))
+app.use(express.static(__dirname + '/dist'));
 
 // logging
 app.use(function(req, res, next) {

@@ -38,10 +38,7 @@ module.exports = function Routes(app, io) {
   app.post('/contacts', contacts_ctrl.create)
   app.delete('/sms/thread/:uid/:id', messages_ctrl.deleteThread)
 
-  // html5 push state
-  app.get(/.*\.(html|js|css|map|jpg|png|gif)/, function(req, res, next) {
-    res.status(404).send()
-  })
+  // Rota catch-all para o HTML5 push state (Single Page Application)
   app.get('*', function(req, res, next) {
     res.sendFile(path.join(__dirname, './dist/index.html'));
   })

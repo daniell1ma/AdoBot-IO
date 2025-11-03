@@ -9,7 +9,6 @@
     "database": { "use_env_variable": "DB_DATABASE" },
     "host": { "use_env_variable": "DB_HOST" },
     "dialect": "mysql",
-    "dialectModule": "mysql2",
     "admin" : {
       "username": "admin",
       "password": "admin"
