@@ -37,8 +37,6 @@ var js_libs = [
 ]
 
 var app_js = [
-  './panel/init.js',
-  './panel/login.js',
   './panel/app.js',
   './panel/routes.js',
   './panel/controllers/**/*.js',

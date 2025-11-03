@@ -1,31 +1,21 @@
-angular.module('Login', ['ui.router', 'templates'])
-
-  .config(['$stateProvider', '$locationProvider', function($stateProvider, $locationProvider) {
-
-    var loginState = {
-      name: 'login',
-      url: '/',
-      templateUrl: 'login.html',
-      controller: 'LoginCtrl'
-    };
-
-    $stateProvider.state(loginState);
-    $locationProvider.html5Mode(true);
-
-  }])
+angular.module('AdoBot')
   .controller('LoginCtrl', [
     '$scope',
     '$http',
-    function($scope, $http) {
+    '$state',
+    function($scope, $http, $state) {
 
       $scope.submitting = false;
       $scope.doLogin = function(username, password) {
         $scope.submitting = true;
-        $http.post('/login', {username: username, password: password})
-          .then(function () {
+        $http.post('/login', {
+            username: username,
+            password: password
+          })
+          .then(function() {
             localStorage.setItem('username', username);
             localStorage.setItem('password', password);
-            window.location.reload();
+            $state.go('dashboard.home', {}, { reload: true });
           })
           .catch(function() {
             $scope.submitting = false;

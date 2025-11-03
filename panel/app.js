@@ -28,13 +28,26 @@ window.App = angular.module('AdoBot', [
   .run([
     '$http',
     '$rootScope',
-    function($http, $rootScope) {
-      $http.defaults.headers.common.username = localStorage.getItem('username');
-      $http.defaults.headers.common.password = localStorage.getItem('password');
+    '$state',
+    function($http, $rootScope, $state) {
+      var username = localStorage.getItem('username');
+      var password = localStorage.getItem('password');
+
+      if (username && password) {
+        $http.defaults.headers.common.username = username;
+        $http.defaults.headers.common.password = password;
+      } else {
+        // Se não houver credenciais, vá para o login sem recarregar a página.
+        // O timeout garante que a transição ocorra após a inicialização.
+        setTimeout(function() { $state.go('login'); }, 0);
+      }
+
       $rootScope.$on('event:auth-loginRequired', function(event, data) {
         localStorage.removeItem('username');
         localStorage.removeItem('password');
-        window.location.reload();
+        delete $http.defaults.headers.common.username;
+        delete $http.defaults.headers.common.password;
+        $state.go('login');
       });
     }
   ]);

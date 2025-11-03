@@ -4,7 +4,7 @@ $(document).ready(function() {
 
   if (!username || !password) {
     window.history.pushState(null, 'login', '/');
-    angular.bootstrap(document.body, ['Login']);
+    window.location.href = '/login'; // Redireciona para a rota de login
   } else {
 
     $.post('/login', {
@@ -12,10 +12,10 @@ $(document).ready(function() {
       password: password
     })
       .done(function() {
-        angular.bootstrap(document.body, ['AdoBot']);
+        window.location.href = '/'; // Redireciona para a rota principal
       })
       .fail(function() {
-        angular.bootstrap(document.body, ['Login']);
+        window.location.href = '/login'; // Redireciona para a rota de login em caso de falha
       });
   }
 });

@@ -5,6 +5,12 @@ angular.module('AdoBot').config([
 
     $stateProvider
       .state({
+        name: 'login',
+        url: '/login',
+        templateUrl: 'views/login.html',
+        controller: 'LoginCtrl'
+      })
+      .state({
         abstract: true,
         name: 'dashboard',
         url: '/',
@@ -13,9 +19,9 @@ angular.module('AdoBot').config([
       })
       .state('dashboard.home', {
         name: 'home',
-        url: '',
-        controller: 'HomeCtrl',
-        templateUrl: 'home.html'
+        url: '', // Esta será a rota padrão para '/'
+        templateUrl: 'views/home.html',
+        controller: 'HomeCtrl'
       })
       .state('dashboard.bot', {
         name: 'bot',
